@@ -1,1 +1,1 @@
-# Coding-exam-SQL
+Coding exam SQL
