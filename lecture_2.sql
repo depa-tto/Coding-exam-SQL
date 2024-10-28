@@ -106,3 +106,34 @@ order by 2, 1 desc;
 
 -- alternative syntax:
 -- order by birth_date ASC, given_name DESC
+
+-- join operation
+-- allow to link records in different tables
+-- get the title of movies produced in 90' (1990-1999) that are Thrillers
+
+select *
+from imdb.movie, imdb.genre
+where movie.id = genre.movie and movie.year between '1990' and '1999' and lower(genre.genre) = 'thriller';
+
+-- alternative syntax
+select *
+from imdb.movie inner join imdb.genre on movie.id = genre.movie
+where movie.year between '1990' and '1999' and lower(genre.genre) = 'thriller';
+
+-- get the title of movies that are thrillers
+select *
+from imdb.movie inner join imdb.genre on movie.id = genre.movie
+where lower(genre.genre) = 'thriller';
+
+-- inner join means that movies (e.g., 0076737) that have no links in table genre are excluded from the result of the join
+select *
+from imdb.movie inner join imdb.genre on movie.id = genre.movie;
+
+
+-- get the title of movies with score grater than 8 on a scale of 10
+-- DISTINCT eliminates duplicate results from the query
+-- select id, official_title, score / scale as "scaled score"
+select id, official_title, score/scale as "scaled score"
+from imdb.movie, imdb.rating
+where movie.id = rating.movie and score > 8 and scale = 10
+order by 2 desc;
