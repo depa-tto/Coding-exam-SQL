@@ -137,3 +137,71 @@ select id, official_title, score/scale as "scaled score"
 from imdb.movie, imdb.rating
 where movie.id = rating.movie and score > 8 and scale = 10
 order by 2 desc;
+
+
+-- insert one more rating for the movie 0468569
+insert into imdb.rating(check_date, source, movie, scale, votes, score) values ('2024-10-02', 'SM', '0468569', 10, 1, 8.4);
+
+-- get only id and official title of movies with rating over 8 on 10
+-- use distinct to remove possible duplications
+select distinct id, official_title, score, scale, score/scale as "scaled score"
+from imdb.movie inner join imdb.rating on movie.id = rating.movie
+where score > 8 and scale = 10
+order by 3 desc;
+
+-- get the movie title and the name of actors and characters involved in movies of 2010 or 2011
+-- report only actors where the name of the character is specified (not null)
+
+-- primary key of crew: movie, person, p_role
+-- is distinct needed? is it possible to have duplicates in the result of this query? no
+
+select official_title, person, "character", p_role, year, given_name
+from imdb.movie inner join imdb.crew on movie.id = crew.movie inner join imdb.person on crew.person = person.id
+where year between '2010' and '2011' and character is not null and p_role = 'actor';
+
+
+select distinct movie.id as movie_id, official_title, person.id as person_id, given_name, "character"
+from imdb.crew inner join imdb.movie on movie.id = movie inner join imdb.person on crew.person = person.id
+where year between '2010' and '2011' and p_role = 'actor' and character is not null;
+
+
+-- get the countries and the official title of movies where thriller movies are produced
+select official_title, country
+from imdb.movie inner join imdb.produced on movie.id = produced.movie inner join imdb.genre on movie.id = genre.movie
+where lower(genre) = 'thriller';
+
+
+-- get the countries where thriller movies are produced
+select distinct country
+from imdb.produced inner join imdb.genre on produced.movie = genre.movie
+where genre = 'Thriller';
+
+-- get the code of movies that are produced in USA and FRA: both countries
+-- the query asks for two records of produced: one record about fra, another record about usa, and both about the same movie
+-- this is not a correct solution: always empty result
+select *
+from imdb.produced
+where country = 'USA' and country = 'FRA';
+
+-- this is not a correct solution: a movie produced only in fra or in usa is returned in the result
+select *
+from imdb.produced
+where country = 'USA' or country = 'FRA';
+
+-- this is equivalent to the previous one: not a correct solution
+select *
+from imdb.produced
+where country in( 'USA', 'FRA');
+
+
+-- get the code of movies that are produced in USA and FRA: both countries
+-- the query asks for two records of produced: one record about fra, another record about usa, and both about the same movie
+-- this is a correct solution
+select *
+from imdb.produced p_usa inner join imdb.produced p_fra on p_usa.movie = p_fra.movie
+where p_usa.country = 'USA' and p_fra.country = 'FRA';
+
+
+select official_title, p_ita.country, p_usa.country
+from imdb.produced p_usa inner join imdb.produced p_ita on p_usa.movie = p_ita.movie inner join imdb.movie on movie.id = p_ita.movie
+where p_usa.country = 'USA' and p_ita.country = 'ITA';
