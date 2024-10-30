@@ -141,3 +141,60 @@ where genre is null;
 select movie.id
 from imdb.genre right join imdb.movie on movie.id = genre.movie
 where genre.movie is null;
+
+-- as a further join operation, we have the full join that means left + right join
+
+-- return the movies that are not rated higher than 8 on 10
+-- movies that are never rated over 8 on 10
+select movie.id, movie.official_title, rating.score / rating.scale as "score"
+from imdb.movie left join imdb.rating on movie.id = rating.movie
+where rating.score / rating.scale <= 0.8 or rating.movie is null;
+
+
+-- what about the movies without any rating? they should be included
+-- rating.movie is null is the condition to include spurious records from movie in the result
+select movie.id, movie.official_title
+from imdb.movie left join imdb.rating on movie.id = rating.movie
+where rating.score / rating.scale <= 0.8 or rating.movie is null
+except
+select movie.id, movie.official_title
+from imdb.movie left join imdb.rating on movie.id = rating.movie
+where rating.score / rating.scale > 0.8;
+
+movie.id official_title   | rating.movie  rating.scale  rating.score
+001         My Movie            001         10                 7
+002         My Fav Movie        NULL        NULL                NULL
+
+-- return the movies that are not Thriller
+-- what about the movies without genre? they should be included in the result
+-- since a film can be multiple genres, we have to consider only the ones that are just classified as thriller 
+select genre.movie
+from imdb.movie left join imdb.genre on genre.movie = movie.id
+where genre.genre <> 'Thriller' or genre.genre is null
+EXCEPT
+select genre.movie
+from imdb.genre 
+where genre.genre = 'Thriller';
+
+
+select movie
+from imdb.genre right join imdb.movie on movie.id = genre.movie
+where genre <> 'Thriller' or genre.movie is null
+except
+select movie
+from imdb.genre
+where genre = 'Thriller';
+
+
+-- this is ok as well
+select id
+from imdb.movie
+except
+select movie
+from imdb.genre
+where genre = 'Thriller';
+
+-- example
+genre.genre genre.movie   |  movie.id
+Thriller        001             001
+NULL            NULL            002
