@@ -198,3 +198,82 @@ where genre = 'Thriller';
 genre.genre genre.movie   |  movie.id
 Thriller        001             001
 NULL            NULL            002
+
+-- aggregations and aggregate functions
+-- MAX, MIN, AVG, SUM, COUNT
+
+-- return the movie with the highest/lowest value of length
+select max(length), min(length)
+from imdb.movie;
+
+-- return the movie with the highest/lowest value of length considering movies in 2010
+select max(length), min(length)
+from imdb.movie
+where year = '2010';
+
+
+-- what is the average length of movies in the 90' years
+select avg(length)
+from imdb.movie
+where year between '1990' and '1999';
+
+-- return the overall duration of movies in 2010
+select sum(length) as "minutes of show", sum(length)/60 as "hourse of show"
+from imdb.movie
+where year = '2010';
+
+-- count the number of movies in 2010
+select count(*)
+from imdb.movie
+where year = '2010';
+
+-- count the number of persons that are dead
+select count(*)
+from imdb.person
+where death_date is not null;
+
+-- this is equivalent to the previous one
+-- count over attribute excludes null values
+select count(death_date)
+from imdb.person;
+
+-- return the number of persons with unique given_name
+-- add distinct to the count operator
+select count(distinct given_name), count(*), count(given_name)
+from imdb.person;
+
+
+-- for each year, return the max duration
+select max(length), year
+from imdb.movie
+group by year
+order by 2 desc;
+
+-- return the number of persons working in each movie
+select count(distinct person), movie.official_title, count(person)
+from imdb.crew inner join imdb.movie on movie.id = crew.movie
+group by movie, official_title;
+
+
+-- return the number of actors working in each movie
+select count(distinct person)
+from imdb.crew
+where p_role = 'actor'
+group by movie
+
+
+-- return the average rating for each movie
+-- sort result by average in descending order
+-- when group by is specified, only attributes in the group by can be projected in the select clause
+-- to return the movie title, the join with movie table is needed
+select avg(score/scale), official_title
+from imdb.rating inner join imdb.movie on movie.id = rating.movie
+group by movie, official_title
+order by 1 desc;
+
+
+-- for each movie, count the involved persons by role
+-- sort result by movie
+select count(person), p_role, movie
+from imdb.crew
+group by movie, p_role
