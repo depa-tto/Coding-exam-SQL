@@ -115,5 +115,102 @@ where movie.id not in (
 );
 
 
+-- extract the movies that are produced in both Italy and USA
+select p_ita.movie
+from imdb.produced p_ita inner join imdb.produced p_usa on p_ita.movie = p_usa.movie
+where p_ita.country = 'ITA' and p_usa.country = 'USA';
 
+select movie
+from imdb.produced
+where country = 'ITA' and movie in (
+    select movie
+    from imdb.produced
+    where country = 'USA'
+)
+
+select movie
+from imdb.produced
+where country = 'ITA'
+INTERSECT
+select movie
+from imdb.produced
+where country = 'USA'
+
+-- extarct the movies that are produced in Italy and USA and no other country
+select movie
+from imdb.produced
+where country = 'ITA'
+INTERSECT
+select movie
+from imdb.produced
+where country = 'USA'
+EXCEPT
+select movie
+from imdb.produced
+where country <> 'ITA' and country <> 'USA';
+
+
+select p_ita.movie
+from imdb.produced p_ita inner join imdb.produced p_usa on p_ita.movie = p_usa.movie left join 
+    imdb.produced p_other on (p_ita.movie = p_other.movie and p_other.country <> 'ITA' and p_other.country <> 'USA')
+where p_ita.country = 'ITA' and p_usa.country = 'USA' and p_other.country is null;
+
+-- extract the id of pairs of actors that are involved in the same movie
+select p1.person, p2.person
+from imdb.crew p1 inner join imdb.crew p2 on p1.movie = p2.movie
+where p2.person <> p1.person and lower(p1.p_role) = 'actor' and lower(p2.p_role) = 'actor';
+
+
+-- extract the movies that are produced in ITA or USA
+select movie
+from imdb.produced
+where country = 'ITA'
+UNION
+select movie
+from imdb.produced
+where country = 'USA';
+
+select distinct movie
+from imdb.produced
+where country = 'ITA' or country = 'USA';
+
+-- extract the movie taht is the longest one in duration among those of 2012
+select official_title, length
+from imdb.movie
+where year = '2012' and length = (
+    select max("length")
+    from imdb.movie
+    where year = '2012'
+);
+
+-- return the number of movies from 2012
+select count(*) as "number of movies"
+from imdb.movie
+where year = '2012';
+
+-- return the number of movies from 2012 with a duration
+select count(length)
+from imdb.movie
+where year = '2012';
+
+-- return the number of different year values in which movies are produced
+select count(distinct year)
+from imdb.movie;
+
+-- return the number of movies for each year
+select year, count(*)
+from imdb.movie
+group by year
+order by 1 desc;
+
+-- show the longest movie for each year
+select max(length), year
+from imdb.movie
+group by year
+order by 1 desc;
+
+-- show the number of countries in which any movie is released and show the title of the movie
+select count(country), movie, official_title
+from imdb.released inner join imdb.movie on movie.id = released.movie
+group by movie, official_title;
 
