@@ -54,3 +54,66 @@ select p_1.official_title, p_2.official_title, sim.score
 from imdb.movie p_1 inner join imdb.sim on p_1.id = sim.movie1 inner join imdb.movie p_2 on p_2.id = sim.movie2
 where sim.score > 0.5 and sim.score <> 1
 order by 3 desc;
+
+-- extract all the movies that have never been rated
+select movie.id, movie.official_title, rating.*
+from imdb.movie left join imdb.rating on movie.id = rating.movie 
+where score is null;
+
+-- extract the person that are not involved in crew
+select person.id, person.given_name
+from imdb.person left join imdb.crew on person.id = crew.person
+where crew.person is null;
+
+select person.id, person.given_name
+from imdb.crew right join imdb.person on crew.person = person.id
+where crew.person is null;
+
+-- extract the movies that are not involved in crew
+select movie.id, movie.official_title, crew.movie
+from imdb.movie left join imdb.crew on movie.id = crew.movie
+where crew.movie is null;
+
+-- extract the movies that are not released in Italy
+select movie.id, movie.official_title, released.country
+from imdb.movie left join imdb.released on (movie.id = released.movie and released.country = 'ITA')
+where released.country is null;
+
+select movie.id, movie.official_title
+from imdb.movie 
+EXCEPT
+select movie.id, movie.official_title
+from imdb.movie inner join imdb.released on movie.id = released.movie
+where released.country = 'ITA';
+
+select movie.id, movie.official_title
+from imdb.movie
+where movie.id not in (
+    select released.movie
+    from imdb.released
+    where released.country = 'ITA'
+);
+
+-- extract all the movies for which we do not know the director 
+select movie.id, movie.official_title
+from imdb.movie left join imdb.crew on (movie.id = crew.movie and lower(crew.p_role) = 'director')
+where crew.p_role is null;
+
+select movie.id, movie.official_title
+from imdb.movie
+EXCEPT
+select movie.id, movie.official_title
+from imdb.movie inner join imdb.crew on movie.id = crew.movie
+where lower(crew.p_role) = 'director';
+
+select movie.id, movie.official_title
+from imdb.movie
+where movie.id not in (
+    select crew.movie
+    from imdb.crew
+    where lower(crew.p_role) = 'director'
+);
+
+
+
+
