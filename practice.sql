@@ -214,3 +214,71 @@ select count(country), movie, official_title
 from imdb.released inner join imdb.movie on movie.id = released.movie
 group by movie, official_title;
 
+-- retrive the number of movies by year
+select count(*) as "number of movies", year
+from imdb.movie
+group by year;
+
+-- retrive the number of stored for which the title is defined
+select count(*)
+from imdb.movie
+where official_title is not null;
+
+-- retrive the number of movies, for each person, where they are involved as actors
+select count(*)
+from imdb.crew
+where lower(p_role) = 'actor'
+group by person;
+
+
+-- what about people that are not actors
+select count(*), person.id, crew.p_role
+from imdb.person left join imdb.crew on (person.id = crew.person and lower(p_role) = 'actor')
+where crew.p_role is null
+group by person.id, crew.p_role;
+
+-- return the people that are not involved in any movie
+select distinct person.id
+from imdb.person
+EXCEPT
+select crew.person
+from imdb.crew
+
+-- return the people that are involved in more than 10 movies
+select crew.person, count(movie)
+from imdb.crew
+group by crew.person
+having count(movie) > 10;
+
+-- return the people that are involved in more than 10 movies as actors
+select crew.person, count(movie)
+from imdb.crew
+where lower(crew.p_role) = 'actor'
+group by crew.person
+having count(movie) > 10
+order by 2 desc;
+
+-- retrive the average movie length for each year
+select avg(length), year
+from imdb.movie
+group by year
+order by year;
+
+-- retrive the movies with more than 10 actors in the crew
+select crew.movie, movie.official_title, count(crew.person)
+from imdb.crew inner join imdb.movie on movie.id = crew.movie
+where lower(p_role) = 'actor'
+group by crew.movie, movie.official_title
+having count(crew.person) > 10;
+
+-- retrive the people that played more than one role in a specific movie
+select crew.person, crew.movie
+from imdb.crew
+group by crew.person, crew.movie
+having count(distinct crew.p_role) > 1;
+
+-- retrive the people that played more than one role movies
+select crew.person
+from imdb.crew
+group by crew.person
+having count(distinct crew.p_role) > 1;
