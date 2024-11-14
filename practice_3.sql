@@ -108,8 +108,7 @@ select crew.movie
 from imdb.crew inner join imdb.person on crew.person = person.id
 where p_role = 'producer' and person.given_name = 'Matthew McConaughey'
 
-
-# return movies without rating
+-- return movies without rating
 select movie.id
 from imdb.movie 
 EXCEPT
@@ -184,5 +183,89 @@ where movie not in (
     from imdb.rating
     where rating.score / rating.scale < 0.85
     );
+
+-- return the length of the longest movie in the database
+select max(length)
+from imdb.movie;
+
+# return the longest movie in the database
+# returning the movie with the max length is different from returning the value of the max length ! 
+# you need to use nested query to obtain the correct result
+select *
+from imdb.movie
+where length = (
+    select max(length)
+    from imdb.movie
+);
+
+
+-- retrieve the oldest movie
+select *
+from imdb.movie
+where year = (
+    select min(year)
+    from imdb.movie
+)
+
+-- for each actor count the number of movies
+select count(movie), person
+from imdb.crew
+where p_role = 'actor'
+group by person;
+
+-- find the actor with the highest number of movies
+select count(movie), person.given_name
+from imdb.crew inner join imdb.person on crew.person = person.id
+where p_role = 'actor'
+group by person.given_name
+order by 1 desc
+limit 1;
+
+
+-- find the movie with the highest number of cast members
+select count(crew.person), movie.official_title
+from imdb.crew inner join imdb.movie on crew.movie = movie.id
+group by movie.official_title
+order by 1 DESC
+limit 1;
+
+
+-- return the given_name of the actors with more than 50 movies
+select count(crew.movie), person.given_name
+from imdb.crew inner join imdb.person on crew.person = person.id
+where crew.p_role = 'actor'
+group by crew.person, person.given_name
+having count(crew.movie) > 50;
+
+
+-- select alive actor --> select actor without death date 
+select person.id -- BE CAREFULL WHEN USING EXCEPT, THE FIRST AND SECOND SELECT MUST SHARE THE SAME ATTRIBUTE
+from imdb.person inner join imdb.crew on person.id = crew.person
+where crew.p_role = 'actor'
+EXCEPT
+select person.id
+from imdb.person
+where person.death_date is not null;
+
+select distinct person.id
+from imdb.person inner join imdb.crew on person.id = crew.person
+where crew.p_role = 'actor' and person.id not in (
+    select person.id
+    from imdb.person
+    where person.death_date is not null
+)
+
+select distinct person.id 
+from imdb.crew left join imdb.person on crew.person = person.id
+where crew.p_role = 'actor' and death_date is null
+
+-- for each alive actor, count the number of movies, 
+-- and return the year of her first and last movie along with her given_name
+select person.id, given_name, count(crew.movie), min(year), max(year)
+from imdb.crew left join imdb.person on crew.person = person.id inner join 
+    imdb.movie on crew.movie = movie.id
+where crew.p_role = 'actor' and death_date is null 
+group by person.id, given_name;
+
 
 
