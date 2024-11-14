@@ -110,5 +110,79 @@ where p_role = 'producer' and person.given_name = 'Matthew McConaughey'
 
 
 # return movies without rating
+select movie.id
+from imdb.movie 
+EXCEPT
+select rating.movie
+from imdb.rating
+where rating.score is not null; -- be carefull to the condition
+
+
+select movie.id
+from imdb.movie 
+where movie.id not in (
+    select rating.movie
+    from imdb.rating
+    where rating.score is not null
+);
+
+
+select movie.id
+from imdb.movie left join imdb.rating on movie.id = rating.movie
+where rating.score is null;
+
+
+-- return movies that are not Thriller: 
+-- the condition does not refer to a single row, but to a movie, which may have several rows associated
+-- Reasoning: you do NOT want to filter out rows that have the value 'Thriller', but rather movies that have 'Thriller' as one of their genres.
+-- Therefore, the condition cannot be verified at the level of a single record.
+-- Instead, it should be verified at the level of a block of rows referring to the same movie.
+select movie.id, movie.official_title
+from imdb.movie left join imdb.genre on (movie.id = genre.movie and lower(genre.genre) = 'thriller')
+where genre.genre is null;
+
+-- get all the movies
+select movie.id, movie.official_title
+from imdb.movie
+EXCEPT -- get the thriller movies
+select movie.id, movie.official_title
+from imdb.movie inner join imdb.genre on movie.id = genre.movie
+where lower(genre.genre) = 'thriller';
+
+
+select movie.id, movie.official_title
+from imdb.movie
+where movie.id not in (
+    select genre.movie
+    from imdb.genre
+    where lower(genre.genre) = 'thriller'
+);
+
+
+-- get movies produced in Australia or those never rated lower than 8.5
+select produced.movie
+from imdb.produced
+where produced.country = 'AUS'
+UNION
+(
+    select rating.movie -- we are taking all the rated movies
+    from imdb.rating
+    EXCEPT -- excluding movies rated below 8.5
+    select rating.movie
+    from imdb.rating
+    where rating.score / rating.scale < 0.85
+);
+
+select produced.movie
+from imdb.produced
+where produced.country = 'AUS' 
+UNION
+select movie
+from imdb.rating 
+where movie not in (
+    select movie 
+    from imdb.rating
+    where rating.score / rating.scale < 0.85
+    );
 
 
