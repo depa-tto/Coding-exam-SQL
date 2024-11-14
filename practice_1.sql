@@ -174,7 +174,7 @@ select distinct movie
 from imdb.produced
 where country = 'ITA' or country = 'USA';
 
--- extract the movie taht is the longest one in duration among those of 2012
+-- extract the movie that is the longest one in duration among those of 2012
 select official_title, length
 from imdb.movie
 where year = '2012' and length = (
