@@ -4,9 +4,14 @@ from order_products op inner join products p on op.product_id = p.product_id
     inner join orders o on o.order_id = op.order_id
 where o.order_dow = 1;
 
-
 -- SAME AS ABOVE BUT WITHOUT INNER JOIN
-
+select op.order_id, product_name
+from order_products op, products p
+where op.order_id in (
+    select o.order_id
+    from orders o
+    where order_dow = 1
+) and op.product_id = p.product_id
 
 -- Retrieve the order_id and the name of products that are added as first in the cart of each order (add_to_cart_order = 1)
 
