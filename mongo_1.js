@@ -235,3 +235,11 @@ db.movie.find(
 )
 
 
+// return the number of movies for each year 
+db.movie.aggregate(
+    [
+        {'$group': {'_id': '$year',
+                    'number of movies': {'$sum': 1}
+        }}
+    ]
+)
