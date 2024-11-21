@@ -235,11 +235,30 @@ db.movie.find(
 )
 
 
-// return the number of movies for each year 
+// AGGREGATION PIPELINE
+
+// return the number of movies for each year
 db.movie.aggregate(
     [
-        {'$group': {'_id': '$year',
-                    'number of movies': {'$sum': 1}
-        }}
+        {'$group': {'_id': {'year':'$year'}, 'number of movies': {'$sum':1}}}
     ]
 )
+
+// return the number of movies for each year and sort the result by year
+db.movie.aggregare(
+    [
+        {'$group': {'_id':{'year':'$year'}, 'number of movies': {'$sum':1}}},
+        {'$sort': {'_id':1}}
+    ]
+)
+
+// sort the result by number of movies in descending order 
+db.movie.aggregate(
+    [
+        {'$group': {'_id': {'year': '$year'}, 'number of movies': {'$sum': 1}}},
+        {'$sort': {'number of movies': -1}}
+    ]
+)
+
+
+
