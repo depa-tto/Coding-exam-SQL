@@ -261,4 +261,108 @@ db.movie.aggregate(
 )
 
 
+// find the movies of 2010 using the aggregate pipeline
+db.movie.aggregate(
+    [
+        {'$group':{'_id':'$year','number of movies':{'$sum':1}}},
+        {'$match':{'_id':'2010'}} // match is used for filtering the document
+    ]
+)
+
+
+
+// find the movies of 2010 using the aggregate pipeline
+db.movie.aggregate(
+    [
+        {'$group':{'_id':'$year','number of movies':{'$sum':1}}},
+        {'$match':{'_id':'2010'}} // match is used for filtering the document
+    ]
+)
+
+// better solution using 'match' before 'group'
+db.movie.aggregate(
+    [
+        {'$match':{'year':'2010'}},
+        {'$group':{'_id':'$year','number of movies':{'$sum':1}}}
+    ]
+)
+
+// retrive the number of movies with Leonardo DiCaprio
+db.movie.aggregate(
+    [
+        {'$match':{'crew.given_name':'Leonardo DiCaprio'}},
+        {'$group':{'_id':null,'movies of DiCaprio':{'$sum':1}}}
+    ]
+)
+
+
+db.movie.aggregate(
+    [
+        {'$match':{'crew.given_name':'Leonardo DiCaprio'}},
+        {'$project':{'involved_person':'Leonardo DiCaprio'}},
+        {'$group':{'_id':'$involved_person','number of movies':{'$sum':1}}}
+    ]
+)
+
+
+db.movie.aggregate(
+    [
+        {'$match':{'crew.given_name':'Leonardo DiCaprio'}},
+        {'$project':{'involved person':'Leonardo DiCaprio'}},
+        {'$group':{'_id':'involved person','number of movies':{'$sum':1}}},
+        {'$project':{'_id':0,'involved person':'$_id','number of movies':1}}
+    ]
+)
+
+
+// retrive the overall length of the movies of Leonardo DiCaprio
+db.movie.aggregate(
+    [
+        {'$match':{'crew.given_name':'Leonardo DiCaprio'}},
+        {'$group':{'_id':null,'overall length':{'$sum':'$length'}}},
+        {'$project':{'_id':0,'involved_person':'Leonardo DiCaprio','overall length':1}}
+    ]
+)
+
+// add the average length of DiCaprio movies
+db.movie.aggregate(
+    [
+        {'$match':{'crew.given_name':'Leonardo DiCaprio'}},
+        {'$group':{'_id':null,'overall length':{'$sum':'$length'},
+                                'average length':{'$avg':'$length'}}},
+        {'$project':{'_id':0,'involved person':'Leonardo DiCaprio',
+                                'overall length':1, 'average length':1
+        }}
+    ]
+)
+
+
+// return the number of people in the crew of each movie 
+db.movie.aggregate(
+    [
+        {'$match':{'crew':{'$type':'array'}}},
+        {'$project':{'movie_id':1,'title':1,'members of crew':{'$size':'$crew'}}}
+    ]
+)
+
+
+db.movie.aggregate(
+    [
+        {'$unwind':'$crew'},
+        {'$group':{'_id':{'movie id':'$movie_id','movie title':'$title'},
+                    'members of crew':{'$sum':1}}},
+    ]
+)
+
+// return the title and score of movies rated in november 2017
+db.movie.aggregate(
+    [
+        {'$unwind':'$ratings'},
+        {'$match':{'ratings.rating_date':{'$gte':ISODate('2017-11-01'),
+                                            '$lte':ISODate('2017-11-31')
+        }}},
+        {'$project':{'_id':0,'title':1,'ratings.score':1}}
+    ]
+)
+
 
