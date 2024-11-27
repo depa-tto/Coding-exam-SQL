@@ -142,7 +142,7 @@ where o1.order_dow = 1 and o2.order_dow = 2
 --Given those schema answer the question
 create table aisles (
     aisle_id integer primary key,
-    aisle    varchar(50)
+    aisle    varchar(15)
 );
 
 create table departments (
@@ -154,7 +154,7 @@ create table products (
     product_id    integer primary key,
     product_name  varchar(300),
     aisle_id      integer references aisles(aisle_id),
-    department_id integer references departments(department_id) ON UPDATE CASCADE ON DELETE CASCADE
+    department_id integer references departments(department_id) ON UPDATE CASCADE 
 );
 
 create table orders (
@@ -168,22 +168,30 @@ create table orders (
 
 create table order_products (
     order_id          integer references orders(order_id),
-    product_id        integer references products(product_id),
+    product_id        integer references products(product_id) ON UPDATE CASCADE ON DELETE CASCADE,
     add_to_cart_order integer,
     reordered         integer,
     primary key (order_id, product_id)
 );
 
+
+-- tick the statement that cannot generate an error
+DELETE FROM aisles WHERE aisle_id = 5; --Error: missing cascade on products. we are deleting an id that is referenced by another table
+DELETE FROM departments WHERE department_id = 8; --Error in order_products (delete department -> cascade on products -> no action order_products
+UPDATE aisles SET aisle_id = 4 WHERE aisle_id = 5; -- Can generate an error if id already exists and in products table due to no update cascade
+UPDATE departments SET department_id = 7 WHERE department_id = 8; -- Can generate an error if id already exists
+UPDATE departments SET department = 'data science' WHERE department_id = 8; -- NO ERROR, could have generate an error if 
+-- the length of a new department name is longer than 15 which is the limit imposed with varchar(15)
+
+
+
 -- tick the statement that generates an error
-DELETE FROM order_products WHERE order_id = 5; -- No error
-DELETE FROM products WHERE product_id = 8292;  -- Error -> no action in order_products
-DELETE FROM orders WHERE order_id = 4848; -- Error -> no action in order_products
+DELETE FROM order_products WHERE order_id = 5; -- No error - we are deleting on the child table, here we are just deleting
+DELETE FROM products WHERE product_id = 8292;  -- No error -> delete on cascade action in order_products
+DELETE FROM orders WHERE order_id = 4848; -- ERROR -> no action in order_products
 DELETE FROM order_products WHERE product_id = 0494; -- No error
 
 
--- tick the statement that cannot generate an error
-DELETE FROM aisles WHERE aisle_id = 5; --Error: missing cascade on products
-DELETE FROM departments WHERE department_id = 8; --Error in order_products (delete department -> cascade on products -> no action order_products
-UPDATE aisles SET aisle_id = 4 WHERE aisle_id = 5; -- Can generate an error if id already exists and in products table
-UPDATE departments SET department_id = 7 WHERE department_id = 8; -- Can generate an error if id already exists
-UPDATE departments SET department = 'data science' WHERE department_id = 8; -- NO ERROR
+
+
+
