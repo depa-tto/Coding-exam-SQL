@@ -154,7 +154,7 @@ create table products (
     product_id    integer primary key,
     product_name  varchar(300),
     aisle_id      integer references aisles(aisle_id),
-    department_id integer references departments(department_id) ON UPDATE CASCADE 
+    department_id integer references departments(department_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 create table orders (
