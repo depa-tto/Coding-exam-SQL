@@ -75,3 +75,22 @@ group by p.department_id,  d.department
 order by 1 desc;
 
 
+-- departments(department_id, department)
+-- aisles(aisle_id, aisle)
+-- products(product_id, product_name, aisle_id, department_id)
+-- orders(order_id, user_id, order_number, order_dow, order_hour_of_day, days_since_prior_order)
+-- order_products(order_id, product_id, add_to_cart_order, reordered)
+
+-- tick the statement that cannot generate an error
+A. DELETE FROM aisles WHERE aisle_id = 5;
+B. DELETE FROM departments WHERE department_id = 8;
+C. UPDATE aisles SET aisle_id = 4 WHERE aisle_id = 5;
+D. UPDATE departments SET department_id = 7 WHERE department_id = 8;
+E. UPDATE departments SET department = 'data science' WHERE department_id = 8; -- correct answer
+
+
+-- tick the statement that generates an error
+A. DELETE FROM order_products WHERE order_id = 5;
+B. DELETE FROM products WHERE product_id = 8292;
+C. DELETE FROM orders WHERE order_id = 4848; -- correct answer
+D. DELETE FROM order_products WHERE product_id = 0494;
