@@ -97,3 +97,32 @@ group by a.name
 having count(*) > 5;
 
 
+-- retrieve the number of flights that arrived 
+-- in each city during June 2020, ordered by the number of flights in descending order.d
+select count(a.id)
+from airport.airport a inner join airport.flight f on a.id = f.arrival
+where f.flight_date >= '2020-06-01' and f.flight_date <= '2020-06-30'
+group by a.city
+order by 1 desc
+
+
+-- retrieve the names of airports where no flights arrived during April 2020.
+select a.name
+from airport.airport a
+where a.id not in (
+    select f.arrival
+    from airport.flight f 
+    where f.flight_date >= '2020-04-01' and f.flight_date <= '2020-04-30'
+)
+
+
+-- Retrieve the name of the airport with the most delayed flights departing in 2020,
+--  ordered by the total delay in descending order.
+select a.name, count(f.id) as delayed_flights_count
+from airport.flight f inner join airport.airport a on f.departure = a.id
+where f.flight_date between '2020-01-01' and '2020-12-31' and f.delay > 0
+group by a.name
+order by delayed_flights_count DESC
+limit 1;
+
+
