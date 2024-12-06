@@ -60,6 +60,22 @@ select movie.id, movie.official_title, rating.*
 from imdb.movie left join imdb.rating on movie.id = rating.movie 
 where score is null;
 
+select movie.id, movie.official_title
+from imdb.movie 
+EXCEPT
+select rating.movie, movie.official_title
+from imdb.rating inner join imdb.movie on movie.id = rating.movie 
+where rating.score is not null;
+
+
+select movie.id, movie.official_title
+from imdb.movie
+where movie.id not in (
+    select rating.movie
+    from imdb.rating
+    where rating.score is not null
+)
+
 -- extract the person that are not involved in crew
 select person.id, person.given_name
 from imdb.person left join imdb.crew on person.id = crew.person
@@ -68,6 +84,21 @@ where crew.person is null;
 select person.id, person.given_name
 from imdb.crew right join imdb.person on crew.person = person.id
 where crew.person is null;
+
+
+select p.id, p.given_name
+from imdb.person p
+EXCEPT
+select c.person, person.given_name
+from imdb.crew c inner join imdb.person on c.person = person.id;
+
+select p.given_name
+from imdb.person p
+where p.id not in (
+    select c.person
+    from imdb.crew c
+);
+
 
 -- extract the movies that are not involved in crew
 select movie.id, movie.official_title, crew.movie
@@ -178,7 +209,7 @@ where country = 'ITA' or country = 'USA';
 select official_title, length
 from imdb.movie
 where year = '2012' and length = (
-    select max("length")
+    select max(length)
     from imdb.movie
     where year = '2012'
 );
