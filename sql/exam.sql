@@ -47,16 +47,16 @@ D. flight can depart and arrive in the same airport
 select a.name, c.name
 from airport.airport a inner join airport.city on a.id = c.code 
 where c.population > 1000000
-order by 2,1
+order by 2,1;
 
 
 -- retrieve the airport name where no flights arrived in May 2020;
-select a.id, a.name
+select a.name
 from airport.airport 
 except 
-select f.arrival
-from airport.flight 
-where f.flight_date >= '2020-05-01' and f.flight_date <= '2020-05-31'
+select a.name
+from airport.flight f inner join airport.airport a on a.id = f.arrival 
+where f.flight_date >= '2020-05-01' and f.flight_date <= '2020-05-31';
 
 
 select a.name 
@@ -65,15 +65,35 @@ where a.id not in(
     select f.arrival
     from airport.flight
     where f.flight_date >= '2020-05-01' and f.flight_date <= '2020-05-31'
-)
+);
 
 -- retrieve the international flights (namely, the flights with different country of departure and
 -- arrival). Return the airport name of departure and arrival of the flight in the result;
-
-
+select a1.name, a2.name
+from airport.flight f inner join airport.airport a1 on f.departure = a1.id 
+    inner join airport.airport a2 on f.arrival = a2.id
+    inner join airport.city c1 on a1.city = c1.code 
+    inner join airport.city c2 on a2.city = c2.code
+where c1.country <> c2.country;
 
 -- retrieve the delay of the most delayed flight departed from "Milano Linate" airport;
+select max(f.delay)
+from airport.flight f inner join airport.airport a on f.departure = a.id 
+where a.name = 'Milano Linate';
 
 
+
+select f.delay
+from airport.flight f inner join airport.airport a on f.deoarture = a.id  
+where a.name = 'Milano Linate'
+order by 1 desc
+limit 1;
 
 -- retrieve the airport names where more than 5 delayed flights arrived in May 2020.
+select a.name
+from airport.flight f inner join airport.airport a on f. arrival = a.id
+where f.flight_date >= '2020-05-01' and f.flight_date <= '2020-05-31' and f.delay > 0
+group by a.name
+having count(*) > 5;
+
+
