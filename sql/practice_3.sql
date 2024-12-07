@@ -330,11 +330,11 @@ where crew.p_role = 'actor' and person.id not in (
     select person.id
     from imdb.person
     where person.death_date is not null
-)
+);
 
 select distinct person.id 
 from imdb.crew left join imdb.person on crew.person = person.id
-where crew.p_role = 'actor' and death_date is null
+where crew.p_role = 'actor' and death_date is null;
 
 -- for each alive actor, count the number of movies, 
 -- and return the year of her first and last movie along with her given_name
