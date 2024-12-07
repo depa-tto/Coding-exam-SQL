@@ -119,7 +119,7 @@ from products p inner join aisles a on p.aisle_id = a.aisle_id
     left join order_products op on op.product_id = p.product_id
         left join orders o on o.order_id = op.order_id and o.order_dow = 2 
 where lower(a.aisle) = 'coffee' 
-group by p.product_id, p.product_id, p.product_name;
+group by p.product_id;
 
 -- Retrieve the id of users that submitted orders on BOTH Monday (order_dow = 1) and Tuesday (order_dow = 2).
 select user_id
