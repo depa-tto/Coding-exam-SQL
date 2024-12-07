@@ -21,7 +21,7 @@ where bio is null;
 -- ‘Interstellar’ (sort result by title)
 select m_other.official_title
 from imdb.movie as m_int, imdb.movie as m_other 
-where lower(m_int.official_title) = '‘Interstellar’' and m_other.length > m_int.length
+where lower(m_int.official_title) = 'Interstellar' and m_other.length > m_int.length
 order by 1;
 
 -- Retrive the official title of the longest movie
@@ -130,7 +130,7 @@ from imdb.location
 where location.d_role = 'death' and location.country = 'ITA';
 
 
--- Retrieve the movies that have a genre in common with the ‘Interstellar’ movie
+-- Retrieve the movies that have a genre in common with the 'Interstellar' movie
 select id, official_title
 from imdb.movie inner join imdb.genre on movie.id = genre.movie
 where genre.genre = ANY (

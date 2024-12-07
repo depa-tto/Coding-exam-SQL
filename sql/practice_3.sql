@@ -9,6 +9,21 @@ from imdb.movie left join imdb.produced on
         (movie.id = produced.movie and produced.country = 'IRL')
 where produced.country is null;
 
+select m.id,m.official_title
+from imdb.movie m 
+EXCEPT
+select p.movie,m.official_title
+from imdb.produced p inner join imdb.movie m on m.id = p.movie
+where p.country = 'IRL';
+
+select m.official_title, m.id
+from imdb.movie m
+where m.id not in (
+    select p.movie
+    from imdb.produced p
+    where p.country = 'IRL'
+)
+
 -- get the countries where 'Crime' movies are produced
 select distinct produced.country
 from imdb.produced inner join imdb.genre on produced.movie = genre.movie
@@ -19,8 +34,18 @@ select movie.id, movie.official_title
 from imdb.movie inner join imdb.crew on movie.id = crew.movie inner join
         imdb.person on person.id = crew.person
 where lower(person.given_name) = 'anne hathaway'; 
--- be carefull when using lower that we have tomlower also 
+-- be carefull when using lower that we have to lower also 
 -- the condition, so in this cade anne hathway must be all in lower case
+
+
+WITH hathaway_movies AS (
+    SELECT movie 
+    FROM imdb.person INNER JOIN imdb.crew ON person.id = crew.person
+    WHERE given_name = 'Anne Hathaway' 
+    )
+    
+SELECT official_title
+FROM imdb.movie INNER JOIN hathaway_movies ON id = movie
 
 -- get the ids of top 10 ranking Horror movies
 select genre.movie, score / scale as "normalized score"
@@ -29,6 +54,15 @@ where lower(genre.genre) = 'horror'
 order by 2 desc
 limit 10;
 
+with horror_m as (
+    select g.movie
+    from imdb.genre g 
+    where g.genre = 'Horror'
+) 
+select horror_m.movie, score / scale as "normalized score"
+from horror_m inner join imdb.rating on horror_m.movie = rating.movie
+order by 2 desc
+limit 10;
 
 -- get the title of movies produced in one of the following countries: 'AUS', 'GBR' or 'IRL'
 select movie.official_title, produced.country
@@ -62,6 +96,19 @@ where country = 'FRA' and movie in (
     from imdb.produced
     where country = 'USA'
 );
+
+
+WITH usa_movies AS (
+    SELECT movie
+    FROM imdb.produced
+    WHERE country = 'USA'
+),
+    fra_movies AS (
+    SELECT movie
+    FROM imdb.produced
+    WHERE country = 'FRA')
+SELECT usa.movie
+FROM usa_movies AS usa INNER JOIN fra_movies as fra ON usa.movie = fra.movie
 
 -- return movies starring Matthew McConaughey as BOTH actor and producer
 select crew.movie
@@ -99,7 +146,7 @@ where  matt_1.p_role = 'actor' and  matt_2.p_role = 'producer';
 
 
 
--- retunr the movies starring Matthew McConaughey as actor or producer
+-- return the movies starring Matthew McConaughey as actor or producer
 select crew.movie
 from imdb.crew inner join imdb.person on crew.person = person.id
 where p_role = 'actor' and person.given_name = 'Matthew McConaughey'
@@ -205,7 +252,7 @@ from imdb.movie
 where year = (
     select min(year)
     from imdb.movie
-)
+);
 
 -- for each actor count the number of movies
 select count(movie), person
@@ -222,12 +269,42 @@ order by 1 desc
 limit 1;
 
 
+WITH count_people AS (
+    SELECT person, COUNT(movie) AS n_movies
+    FROM imdb.crew
+    WHERE p_role = 'actor'
+    GROUP BY person
+    )
+-- use the computed table in the nested query inside the WHERE clause to select the movie with MAX length
+-- the JOIN with the 'person' table is needed if we also want to return the given_name 
+SELECT given_name, n_movies
+FROM count_people INNER JOIN imdb.person ON count_people.person = person.id
+WHERE n_movies = (
+    SELECT MAX(n_movies) 
+    FROM count_people
+    )
+
+
 -- find the movie with the highest number of cast members
 select count(crew.person), movie.official_title
 from imdb.crew inner join imdb.movie on crew.movie = movie.id
 group by movie.official_title
 order by 1 DESC
 limit 1;
+
+
+-- compute the virtual table of counts for each movie
+WITH count_people AS (
+    SELECT movie, count(person) as n_people
+    FROM imdb.crew 
+    GROUP BY movie)
+SELECT official_title, n_people
+FROM count_people INNER JOIN imdb.movie ON count_people.movie = movie.id 
+WHERE n_people = (
+    SELECT MAX(n_people) 
+    FROM count_people)
+-- use the computed table of counts in the WHERE clause to select the movie with MAX n_people
+-- the JOIN with movie is only needed if you want to also return the official_title
 
 
 -- return the given_name of the actors with more than 50 movies
@@ -239,7 +316,7 @@ having count(crew.movie) > 50;
 
 
 -- select alive actor --> select actor without death date 
-select person.id -- BE CAREFULL WHEN USING EXCEPT, THE FIRST AND SECOND SELECT MUST SHARE THE SAME ATTRIBUTE
+select person.id -- BE CAREFULL WHEN USING EXCEPT, THE FIRST AND SECOND SELECT MUST BE OF THE SAME LENGTH
 from imdb.person inner join imdb.crew on person.id = crew.person
 where crew.p_role = 'actor'
 EXCEPT

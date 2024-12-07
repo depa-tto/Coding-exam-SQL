@@ -23,6 +23,20 @@ select official_title
 from imdb.movie
 where official_title ilike '%murder%';
 
+
+select m.official_title
+from imdb.movie m 
+where m.year in ('2010','2011','2012') and m.official_title ilike '%the%';
+
+
+select m.official_title
+from imdb.movie m 
+where m.year in ('2010','2011','2012')
+INTERSECT
+select m.official_title
+from imdb.movie m 
+where m.official_title ilike '%the%';
+
 select official_title
 from imdb.movie
 where lower(official_title) like '%murder%';
@@ -214,6 +228,16 @@ where year = '2012' and length = (
     where year = '2012'
 );
 
+
+select m.official_title, length 
+from imdb.movie m 
+where m.year = '2012' and length = (
+    select max(m.length)
+    from imdb.movie m 
+    where m.year = '2012'
+)
+
+
 -- return the number of movies from 2012
 select count(*) as "number of movies"
 from imdb.movie
@@ -308,7 +332,7 @@ from imdb.crew
 group by crew.person, crew.movie
 having count(distinct crew.p_role) > 1;
 
--- retrive the people that played more than one role movies
+-- retrive the people that played more than one role in movies
 select crew.person
 from imdb.crew
 group by crew.person
