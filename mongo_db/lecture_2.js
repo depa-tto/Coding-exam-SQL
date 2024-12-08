@@ -55,6 +55,19 @@ db.movie.aggregate(
     ]
 )
 
+db.movie.aggregate(
+    [
+        {'$group':{'_id':'$year','# movies':{'$sum':1}}}
+    ]
+)
+
+
+db.movie.aggregate(
+    [
+        {'$group':{'_id':'$year','# movies':{'$sum':1}}},
+        {'$match':{'_id':'2010'}} // group by id since after the 'group' operator there is no year field anymore
+    ]
+)
 
 /* return the title and the year of the movies of 2010 */
 db.movie.find(
@@ -87,7 +100,8 @@ db.movie.aggregate(
 
 
 /* retrieve the number of movies by year */
-/* the '$' before a field name indicates that the value of this field from incoming document will be considered in the operation. In this example, $year means group by the values of the year field. */
+/* the '$' before a field name indicates that the value of this field from incoming document will be considered in the operation. */
+/* i n this example, $year means group by the values of the year field. */
 /* sort the result according to the counts in descending order and sort by year in ascending order when the counter are the same */
 db.movie.aggregate(
     [
@@ -100,7 +114,7 @@ db.movie.aggregate(
 db.movie.aggregate(
     [
         {'$match':{'crew.given_name':/leonardo dicaprio/i}},
-        {'$group':{'_id':null,'overall length':{'$sum':'$length'}}},
+        {'$group':{'_id':null,'overall length':{'$sum':'$length'}}}, // '_id':null means that all the documents will be grouped togheter in an unique group
         {'$project':{'_id':0,'person name':'Leonardo DiCaprio','overall length':1}}
     ]
 )
@@ -131,8 +145,8 @@ db.movie.aggregate(
             "_id": "Leonardo DiCaprio", 
             "overall_movie_length": { "$sum": "$length" },
             "number_of_movies": { "$sum": 1 } } },
-        { "$project": { "_id": 0, "actor name": "$_id", "average_movie_length": { "$divide": 
-        [ "$overall_movie_length", "$number_of_movies" ] } } }
+        { "$project": { "_id": 0, "actor name": "$_id",
+                        "average_movie_length": { "$divide": [ "$overall_movie_length", "$number_of_movies" ] } } }
     ]
 )
 
