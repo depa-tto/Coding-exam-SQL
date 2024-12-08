@@ -296,3 +296,19 @@ db.movie.find(
         "ratings": 1,
     }
 )
+
+
+db.movie.find(
+    {
+        'crew':{'$elemMatch':
+            {'given_name':/leonardo dicaprio/i, 'role':'actor'}
+        },
+        'ratings':{'$elemMatch':
+            {'rating_date': {'$gte': new Date ('2017-11-01'), '$lte': new Date('2017-11-31')}}}
+    },
+    {
+        '_id':0,
+        "title": 1,
+        "ratings": 1,
+    }
+)
