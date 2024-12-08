@@ -6,6 +6,7 @@ db.orders.find(
     }
 )
 
+
 /* orders submitted on Tuesday (order_dow = 2) between 8 and 20 where at least 
 one product contains the string "soda" (case insensitive match). In the result,
 only the fields order_id, order_dow, order_hour_of_day are shown as well as 
@@ -124,7 +125,7 @@ db.orders.find(
 db.orders.aggregate(
     [
         {'$group':{'_id':'$order_dow','num of orders':{'$sum':1}}},
-        {'$sort':{'_id':1}}
+        {'$sort':{'_id':1}} // we have to sort by '_id' since the fild 'order_dow' does not exist anymore after the '$group'
     ]
 )
 
