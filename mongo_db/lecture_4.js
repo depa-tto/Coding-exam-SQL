@@ -31,7 +31,7 @@ db.orders.find(
 )
 
 
-/* count the number of orders submitted on Tuesday (order_dow = 2) between 8 and 20 where "soda" is ordered. Use aggregate. */
+/* count the TOTAL(so '_id':null) number of ORDERS submitted on Tuesday (order_dow = 2) between 8 and 20 where "soda" is ordered. Use aggregate. */
 /* counts the total number of orders that include at least one soda product during the same time frame. */
 db.orders.aggregate(
     [
@@ -43,7 +43,7 @@ db.orders.aggregate(
 )
 
 
-/* counts the total number of individual soda products ordered on Tuesdays between 8 and 20. */
+/* counts the TOTAL(so '_id':null) number of individual soda PRODUCTS ordered on Tuesdays between 8 and 20. */
 db.orders.aggregate(
     [
         {'$unwind':'$products'},
