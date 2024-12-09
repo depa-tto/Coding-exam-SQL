@@ -125,3 +125,39 @@ db.oredrs.aggregate(
     ]
 )
 
+
+// What's the most ordered product in each hour of the day?
+// $first selects the most frequent product name and its count for each hour.
+db.orders.aggregate(
+    [
+        {'$unwind':'$products'},
+        {"$group": {"_id":{"product_name": "$products.product_name",
+            "hour": "$order_hour_of_day"}, "n_products":{"$sum":1}}},
+        {"$sort": {"n_products": -1}},
+        {"$group": {"_id": "$_id.hour", "product_name": {"$first": "$_id.product_name"}, "count": {"$first": "$n_products"}}},
+        {"$sort": {"_id": 1}}
+    ]
+)
+
+
+// Which aisle do customers visit first? Count the number of times each aisle is visited as first.
+db.orders.aggregate(
+    [
+        {'$unwind':'$products'},
+        {"$match":{"products.add_to_cart_order": 1}},
+        {"$group":{"_id":"$products.aisle", "count":{"$sum":1}}},
+        {"$sort":{"count":-1}}
+    ]
+)
+
+// Which aisle do customers visit last? Count the number of times each aisle is visited as last.
+db.orders.aggregate(
+    [
+        {'$unwind':'$products'},
+        {"$sort": {"products.add_to_cart_order": -1}},
+        {"$group": {"_id": "$order_id", "aisle": {"$first":"$products.aisle"}}},
+        {"$group": {"_id": "$aisle", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+)
+
